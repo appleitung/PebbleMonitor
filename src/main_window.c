@@ -3,8 +3,10 @@
 
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
 static Window *s_window;
-static InverterLayer *right_channel_layer;
-static InverterLayer *left_channel_layer;
+static InverterLayer *right_channel_peak;
+static InverterLayer *left_channel_peak;
+static InverterLayer *right_channel_avg;
+static InverterLayer *left_channel_avg;
 static InverterLayer *sensitivity_layer;
 
 static void initialise_ui(void) {
@@ -12,30 +14,42 @@ static void initialise_ui(void) {
   window_set_background_color(s_window, GColorBlack);
   window_set_fullscreen(s_window, false);
   
-  // right_channel_layer
-  right_channel_layer = inverter_layer_create(GRect(80, 1, 20, 150));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_layer);
+  // right_channel_peak
+  right_channel_peak = inverter_layer_create(GRect(80, 1, 20, 150));
+  layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_peak);
   
-  // left_channel_layer
-  left_channel_layer = inverter_layer_create(GRect(45, 1, 20, 150));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_layer);
+  // left_channel_peak
+  left_channel_peak = inverter_layer_create(GRect(40, 1, 20, 150));
+  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_peak);
+  
+  // right_channel_avg
+  right_channel_avg = inverter_layer_create(GRect(105, 1, 20, 150));
+  layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_avg);
+  
+  // left_channel_avg
+  left_channel_avg = inverter_layer_create(GRect(15, 1, 20, 150));
+  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_avg);
   
   // sensitivity_layer
-  sensitivity_layer = inverter_layer_create(GRect(0, 75, 144, 2));
+  sensitivity_layer = inverter_layer_create(GRect(0, 91, 144, 2));
   layer_add_child(window_get_root_layer(s_window), (Layer *)sensitivity_layer);
 }
 
 static void destroy_ui(void) {
   window_destroy(s_window);
-  inverter_layer_destroy(right_channel_layer);
-  inverter_layer_destroy(left_channel_layer);
+  inverter_layer_destroy(right_channel_peak);
+  inverter_layer_destroy(left_channel_peak);
+  inverter_layer_destroy(right_channel_avg);
+  inverter_layer_destroy(left_channel_avg);
   inverter_layer_destroy(sensitivity_layer);
 }
 // END AUTO-GENERATED UI CODE
 
 enum DataKeys {
-  CHANNEL_0_KEY,
-  CHANNEL_1_KEY,
+  LEFT_CHANNEL_PEAK_KEY,
+  RIGHT_CHANNEL_PEAK_KEY,
+  LEFT_CHANNEL_AVG_KEY,
+  RIGHT_CHANNEL_AVG_KEY,
 };
 
 static AppSync sync;
@@ -51,11 +65,17 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   Layer *layer = NULL;
   
   switch (key) {
-    case CHANNEL_0_KEY:
-      layer = inverter_layer_get_layer(left_channel_layer);
+    case LEFT_CHANNEL_PEAK_KEY:
+      layer = inverter_layer_get_layer(left_channel_peak);
       break;
-    case CHANNEL_1_KEY:
-      layer = inverter_layer_get_layer(right_channel_layer);
+    case RIGHT_CHANNEL_PEAK_KEY:
+      layer = inverter_layer_get_layer(right_channel_peak);
+      break;
+    case LEFT_CHANNEL_AVG_KEY:
+      layer = inverter_layer_get_layer(left_channel_avg);
+      break;
+    case RIGHT_CHANNEL_AVG_KEY:
+      layer = inverter_layer_get_layer(right_channel_avg);
       break;
   }
   
@@ -75,8 +95,10 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 static void window_load(Window *window) 
 {
   Tuplet initial_values[] = {
-    TupletInteger(CHANNEL_0_KEY, (uint8_t) 0),
-    TupletInteger(CHANNEL_1_KEY, (uint8_t) 0),
+    TupletInteger(LEFT_CHANNEL_PEAK_KEY, (uint8_t) 0),
+    TupletInteger(RIGHT_CHANNEL_PEAK_KEY, (uint8_t) 0),
+    TupletInteger(LEFT_CHANNEL_AVG_KEY, (uint8_t) 0),
+    TupletInteger(RIGHT_CHANNEL_AVG_KEY, (uint8_t) 0),
   };
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);  

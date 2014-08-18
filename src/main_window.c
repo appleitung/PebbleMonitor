@@ -19,7 +19,7 @@ static void initialise_ui(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_peak);
   
   // left_channel_peak
-  left_channel_peak = inverter_layer_create(GRect(40, 1, 20, 150));
+  left_channel_peak = inverter_layer_create(GRect(42, 1, 20, 150));
   layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_peak);
   
   // right_channel_avg
@@ -27,7 +27,7 @@ static void initialise_ui(void) {
   layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_avg);
   
   // left_channel_avg
-  left_channel_avg = inverter_layer_create(GRect(15, 1, 20, 150));
+  left_channel_avg = inverter_layer_create(GRect(17, 1, 20, 150));
   layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_avg);
   
   // sensitivity_layer
@@ -109,6 +109,37 @@ static void handle_window_unload(Window* window)
   destroy_ui();
 }
 
+void move_sensitivity_layer(int steps)
+{
+  Layer *layer = inverter_layer_get_layer(sensitivity_layer);
+  GRect frame = layer_get_frame(layer);
+  GPoint origin = frame.origin;
+  GSize size = frame.size;
+  GRect newFrame = GRect(origin.x, origin.y + steps, size.w, size.h);
+  
+  layer_set_frame(layer, newFrame);
+}
+
+void up_single_click_handler(ClickRecognizerRef recognizer, void *context) 
+{
+  move_sensitivity_layer(-15);
+}
+
+void select_single_click_handler(ClickRecognizerRef recognizer, void *context) 
+{}
+
+void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 
+{
+  move_sensitivity_layer(15);
+}
+
+void click_config_provider(Window *window) 
+{
+  window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
+}
+
 void show_main_window(void) 
 {
   initialise_ui();
@@ -121,7 +152,7 @@ void show_main_window(void)
   const int outbound_size = app_message_inbox_size_maximum();
   app_message_open(inbound_size, outbound_size);
   
-  //window_set_click_config_provider(s_window, click_config_provider);
+  window_set_click_config_provider(s_window, (ClickConfigProvider) click_config_provider);
   
   window_stack_push(s_window, true);
 }

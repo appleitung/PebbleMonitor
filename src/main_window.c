@@ -33,6 +33,9 @@ static void destroy_ui(void) {
 }
 // END AUTO-GENERATED UI CODE
 
+static const int DISPLAY_HEIGHT = 150;
+static const int AVAILABLE_STEPS = 10;
+
 enum DataKeys {
   LEFT_CHANNEL_PEAK_KEY,
   RIGHT_CHANNEL_PEAK_KEY,
@@ -46,6 +49,22 @@ static uint8_t sync_buffer[256];
 static void sync_error_callback(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) 
 {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
+}
+
+static int selected_sensitivity()
+{
+  Layer *layer = inverter_layer_get_layer(sensitivity_layer);
+  GRect frame = layer_get_frame(layer);
+  GPoint origin = frame.origin;
+  
+  return (origin.y - DISPLAY_HEIGHT) * -1;
+}
+
+static void trigger_alarm(int value)
+{
+  if (value > selected_sensitivity()) {
+    vibes_short_pulse();
+  }
 }
 
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) 
@@ -67,13 +86,15 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   GPoint origin = frame.origin;
   GSize size = frame.size;
   
-  int value = new_tuple->value->uint8;
-  int new_h = 150 - (150 - value);
-  int new_y = 150 - value;
+  int value = new_tuple->value->uint8 * 1.55;
+  int new_h = DISPLAY_HEIGHT - (DISPLAY_HEIGHT - value);
+  int new_y = DISPLAY_HEIGHT - value;
   
   GRect newFrame = GRect(origin.x, new_y, size.w, new_h);
   
   layer_set_frame(layer, newFrame);
+  
+  trigger_alarm(value);
 }
 
 static void window_load(Window *window) 
@@ -101,7 +122,7 @@ void move_sensitivity_layer(int steps)
   GSize size = frame.size;
   int new_y = origin.y + steps;
   
-  if (new_y > 150 || new_y < 0) {
+  if (new_y > DISPLAY_HEIGHT || new_y < 0) {
     return;
   }
   
@@ -111,7 +132,7 @@ void move_sensitivity_layer(int steps)
 
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) 
 {
-  move_sensitivity_layer(-15);
+  move_sensitivity_layer(DISPLAY_HEIGHT / AVAILABLE_STEPS * -1);
 }
 
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) 
@@ -120,14 +141,14 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context)
   GRect frame = layer_get_frame(layer);
   GPoint origin = frame.origin;
   GSize size = frame.size;
-  GRect newFrame = GRect(origin.x, 75, size.w, size.h);
+  GRect newFrame = GRect(origin.x, DISPLAY_HEIGHT / 2, size.w, size.h);
   
   layer_set_frame(layer, newFrame);
 }
 
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 
 {
-  move_sensitivity_layer(15);
+  move_sensitivity_layer(DISPLAY_HEIGHT / AVAILABLE_STEPS);
 }
 
 void click_config_provider(Window *window) 

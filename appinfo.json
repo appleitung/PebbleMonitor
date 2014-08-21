@@ -7,7 +7,13 @@
     "longName": "PebbleMonitor",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "images/Logo_28.png",
+                "name": "LOGO",
+                "type": "png"
+            }
+        ]
     },
     "shortName": "PebbleMonitor",
     "uuid": "0c0f8e32-f4eb-4efd-a556-3dcae796de42",

@@ -4,10 +4,8 @@
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
 static Window *s_window;
 static InverterLayer *right_channel_peak;
-static InverterLayer *left_channel_peak;
-static InverterLayer *right_channel_avg;
-static InverterLayer *left_channel_avg;
 static InverterLayer *sensitivity_layer;
+static InverterLayer *left_channel_peak;
 
 static void initialise_ui(void) {
   s_window = window_create();
@@ -15,33 +13,23 @@ static void initialise_ui(void) {
   window_set_fullscreen(s_window, false);
   
   // right_channel_peak
-  right_channel_peak = inverter_layer_create(GRect(80, 1, 20, 150));
+  right_channel_peak = inverter_layer_create(GRect(79, 1, 35, 150));
   layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_peak);
   
-  // left_channel_peak
-  left_channel_peak = inverter_layer_create(GRect(42, 1, 20, 150));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_peak);
-  
-  // right_channel_avg
-  right_channel_avg = inverter_layer_create(GRect(105, 1, 20, 150));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_avg);
-  
-  // left_channel_avg
-  left_channel_avg = inverter_layer_create(GRect(17, 1, 20, 150));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_avg);
-  
   // sensitivity_layer
-  sensitivity_layer = inverter_layer_create(GRect(0, 91, 144, 2));
+  sensitivity_layer = inverter_layer_create(GRect(0, 75, 144, 2));
   layer_add_child(window_get_root_layer(s_window), (Layer *)sensitivity_layer);
+  
+  // left_channel_peak
+  left_channel_peak = inverter_layer_create(GRect(30, 1, 35, 150));
+  layer_add_child(window_get_root_layer(s_window), (Layer *)left_channel_peak);
 }
 
 static void destroy_ui(void) {
   window_destroy(s_window);
   inverter_layer_destroy(right_channel_peak);
-  inverter_layer_destroy(left_channel_peak);
-  inverter_layer_destroy(right_channel_avg);
-  inverter_layer_destroy(left_channel_avg);
   inverter_layer_destroy(sensitivity_layer);
+  inverter_layer_destroy(left_channel_peak);
 }
 // END AUTO-GENERATED UI CODE
 
@@ -71,12 +59,8 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
     case RIGHT_CHANNEL_PEAK_KEY:
       layer = inverter_layer_get_layer(right_channel_peak);
       break;
-    case LEFT_CHANNEL_AVG_KEY:
-      layer = inverter_layer_get_layer(left_channel_avg);
-      break;
-    case RIGHT_CHANNEL_AVG_KEY:
-      layer = inverter_layer_get_layer(right_channel_avg);
-      break;
+    default:
+      return;
   }
   
   GRect frame = layer_get_frame(layer);
@@ -115,8 +99,13 @@ void move_sensitivity_layer(int steps)
   GRect frame = layer_get_frame(layer);
   GPoint origin = frame.origin;
   GSize size = frame.size;
-  GRect newFrame = GRect(origin.x, origin.y + steps, size.w, size.h);
+  int new_y = origin.y + steps;
   
+  if (new_y > 150 || new_y < 0) {
+    return;
+  }
+  
+  GRect newFrame = GRect(origin.x, new_y, size.w, size.h);
   layer_set_frame(layer, newFrame);
 }
 
@@ -126,7 +115,15 @@ void up_single_click_handler(ClickRecognizerRef recognizer, void *context)
 }
 
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) 
-{}
+{
+  Layer *layer = inverter_layer_get_layer(sensitivity_layer);
+  GRect frame = layer_get_frame(layer);
+  GPoint origin = frame.origin;
+  GSize size = frame.size;
+  GRect newFrame = GRect(origin.x, 75, size.w, size.h);
+  
+  layer_set_frame(layer, newFrame);
+}
 
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 
 {

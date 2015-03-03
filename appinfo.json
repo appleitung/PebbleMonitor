@@ -3,22 +3,24 @@
     "capabilities": [
         ""
     ],
-    "companyName": "tdonder@gmail.com",
-    "longName": "PebbleMonitor",
+    "companyName": "appleitung",
+    "longName": "Watch Smart",
     "projectType": "native",
     "resources": {
         "media": [
             {
                 "file": "images/Logo_28.png",
+                "menuIcon": true,
                 "name": "LOGO",
                 "type": "png"
             }
         ]
     },
-    "shortName": "PebbleMonitor",
+    "sdkVersion": "2",
+    "shortName": "Watch Smart",
     "uuid": "0c0f8e32-f4eb-4efd-a556-3dcae796de42",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.4",
     "watchapp": {
         "watchface": false
     }

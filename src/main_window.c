@@ -75,6 +75,7 @@ static void destroy_ui(void) {
 static const int DISPLAY_HEIGHT = 150;
 static const int AVAILABLE_STEPS = 10;
 
+static int SECONDS_SINCE_LAST_UPDATE = 0;
 static GRect LAST_SENSITIVITY_FRAME;
 
 enum DataKeys {
@@ -110,10 +111,26 @@ static int selected_sensitivity()
   return (origin.y - DISPLAY_HEIGHT) * -1;
 }
 
+static const uint32_t connectionLostSegments[] = { 500, 100, 500, 100, 500, 100, 1000, 100, 1000, 100, 1000, 100, 500, 100, 500, 100, 500 };
 static void trigger_alarm(int value)
 {
   if (value > selected_sensitivity()) {
     vibes_short_pulse();
+  } else if (value == -1) {
+    VibePattern pat = {
+      .durations = connectionLostSegments,
+      .num_segments = ARRAY_LENGTH(connectionLostSegments),
+    };
+    vibes_enqueue_custom_pattern(pat);
+  }
+}
+
+static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+  SECONDS_SINCE_LAST_UPDATE++;
+  
+  if (SECONDS_SINCE_LAST_UPDATE > 60) {
+    SECONDS_SINCE_LAST_UPDATE = 0;
+    trigger_alarm(-1);
   }
 }
 
@@ -158,6 +175,8 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   layer_set_frame(layer, newFrame);
   
   trigger_alarm(value);
+  
+  SECONDS_SINCE_LAST_UPDATE = 0;
 }
 
 static void window_load(Window *window) 
@@ -175,6 +194,8 @@ static void window_load(Window *window)
   app_message_register_outbox_failed(out_failed_handler);
   app_message_register_outbox_sent(out_sent_handler);
   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  
+  tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 }
 
 static void handle_window_unload(Window* window) 
@@ -223,6 +244,8 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context)
   layer_set_frame(layer, newFrame);
   
   send_sensitivity();
+  
+  //trigger_alarm(-1);
 }
 
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 

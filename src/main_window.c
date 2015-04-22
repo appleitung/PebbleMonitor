@@ -134,19 +134,6 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   }
 }
 
-static void send_sensitivity()
-{
-  DictionaryIterator *iter;
-  app_message_outbox_begin(&iter);
-  
-  Tuplet value = TupletInteger(SENSITIVITY, selected_sensitivity());
-  dict_write_tuplet(iter, &value);
-  
-  app_message_outbox_send();
-  
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Sensitivity sent: %d.", selected_sensitivity());
-}
-
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) 
 {
   Layer *layer = NULL;
@@ -191,9 +178,9 @@ static void window_load(Window *window)
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);
   
-  app_message_register_outbox_failed(out_failed_handler);
-  app_message_register_outbox_sent(out_sent_handler);
-  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  //app_message_register_outbox_failed(out_failed_handler);
+  //app_message_register_outbox_sent(out_sent_handler);
+  //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
   
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 }
@@ -217,8 +204,6 @@ void move_sensitivity_layer(int steps)
   
   GRect newFrame = GRect(origin.x, new_y, size.w, size.h);
   layer_set_frame(layer, newFrame);
-  
-  send_sensitivity();
 }
 
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) 
@@ -242,8 +227,6 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context)
   }
   
   layer_set_frame(layer, newFrame);
-  
-  send_sensitivity();
   
   //trigger_alarm(-1);
 }

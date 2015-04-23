@@ -5,6 +5,7 @@
 static Window *s_window;
 static GFont s_res_bitham_30_black;
 static GFont s_res_gothic_14;
+static GFont s_res_gothic_24;
 static InverterLayer *right_channel_peak;
 static InverterLayer *sensitivity_layer;
 static InverterLayer *left_channel_peak;
@@ -12,6 +13,7 @@ static ActionBarLayer *s_actionbarlayer;
 static TextLayer *s_plusbuttonlayer;
 static TextLayer *s_minusbuttonlayer;
 static TextLayer *on_off_textlayer;
+static TextLayer *connection_lost_textlayer;
 
 static void initialise_ui(void) {
   s_window = window_create();
@@ -20,6 +22,7 @@ static void initialise_ui(void) {
   
   s_res_bitham_30_black = fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK);
   s_res_gothic_14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
+  s_res_gothic_24 = fonts_get_system_font(FONT_KEY_GOTHIC_24);
   // right_channel_peak
   right_channel_peak = inverter_layer_create(GRect(70, 1, 35, 150));
   layer_add_child(window_get_root_layer(s_window), (Layer *)right_channel_peak);
@@ -58,6 +61,13 @@ static void initialise_ui(void) {
   text_layer_set_text_alignment(on_off_textlayer, GTextAlignmentCenter);
   text_layer_set_font(on_off_textlayer, s_res_gothic_14);
   layer_add_child(window_get_root_layer(s_window), (Layer *)on_off_textlayer);
+  
+  // connection_lost_textlayer
+  connection_lost_textlayer = text_layer_create(GRect(0, 58, 144, 26));
+  text_layer_set_text(connection_lost_textlayer, "Connnection Lost");
+  text_layer_set_text_alignment(connection_lost_textlayer, GTextAlignmentCenter);
+  text_layer_set_font(connection_lost_textlayer, s_res_gothic_24);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)connection_lost_textlayer);
 }
 
 static void destroy_ui(void) {
@@ -69,6 +79,7 @@ static void destroy_ui(void) {
   text_layer_destroy(s_plusbuttonlayer);
   text_layer_destroy(s_minusbuttonlayer);
   text_layer_destroy(on_off_textlayer);
+  text_layer_destroy(connection_lost_textlayer);
 }
 // END AUTO-GENERATED UI CODE
 
@@ -114,6 +125,9 @@ static void trigger_alarm(int value)
       .num_segments = ARRAY_LENGTH(connectionLostSegments),
     };
     vibes_enqueue_custom_pattern(pat);
+    
+    Layer *layer = text_layer_get_layer(connection_lost_textlayer);
+    layer_set_hidden(layer, false);
   }
 }
 
@@ -156,6 +170,8 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   trigger_alarm(value);
   
   SECONDS_SINCE_LAST_UPDATE = 0;
+  Layer *connectionLostLayer = text_layer_get_layer(connection_lost_textlayer);
+    layer_set_hidden(connectionLostLayer, true);
 }
 
 static void window_load(Window *window) 

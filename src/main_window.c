@@ -94,14 +94,6 @@ static void sync_error_callback(DictionaryResult dict_error, AppMessageResult ap
   APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
 }
 
-static void out_sent_handler(DictionaryIterator *sent, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Outgoing AppMessage successfully sent.");
-}
-
-static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Outgoing AppMessage failed");
-}
-
 static int selected_sensitivity()
 {
   Layer *layer = inverter_layer_get_layer(sensitivity_layer);
@@ -111,7 +103,7 @@ static int selected_sensitivity()
   return (origin.y - DISPLAY_HEIGHT) * -1;
 }
 
-static const uint32_t connectionLostSegments[] = { 500, 100, 500, 100, 500, 100, 1000, 100, 1000, 100, 1000, 100, 500, 100, 500, 100, 500 };
+static const uint32_t connectionLostSegments[] = { 200, 200, 200, 200, 200, 400, 400, 200, 400, 200, 400, 400, 200, 200, 200, 200, 200 };
 static void trigger_alarm(int value)
 {
   if (value > selected_sensitivity()) {
@@ -129,7 +121,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   SECONDS_SINCE_LAST_UPDATE++;
   
   if (SECONDS_SINCE_LAST_UPDATE > 60) {
-    SECONDS_SINCE_LAST_UPDATE = 0;
+    SECONDS_SINCE_LAST_UPDATE = 50; // Repeat SOS every 20 Seconds
     trigger_alarm(-1);
   }
 }
@@ -178,10 +170,6 @@ static void window_load(Window *window)
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
       sync_tuple_changed_callback, sync_error_callback, NULL);
   
-  //app_message_register_outbox_failed(out_failed_handler);
-  //app_message_register_outbox_sent(out_sent_handler);
-  //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-  
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 }
 
@@ -228,7 +216,7 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context)
   
   layer_set_frame(layer, newFrame);
   
-  //trigger_alarm(-1);
+  trigger_alarm(-1);
 }
 
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 

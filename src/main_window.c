@@ -140,6 +140,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   }
 }
 
+static PropertyAnimation *s_property_animation;
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) 
 {
   Layer *layer = NULL;
@@ -165,7 +166,10 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   
   GRect newFrame = GRect(origin.x, new_y, size.w, new_h);
   
-  layer_set_frame(layer, newFrame);
+  // Create the animation
+  s_property_animation = property_animation_create_layer_frame(layer, &frame, &newFrame);
+  // Schedule to occur ASAP with default settings
+  animation_schedule((Animation*) s_property_animation);
   
   trigger_alarm(value);
   
@@ -207,7 +211,13 @@ void move_sensitivity_layer(int steps)
   }
   
   GRect newFrame = GRect(origin.x, new_y, size.w, size.h);
-  layer_set_frame(layer, newFrame);
+  
+  // Create the animation
+  s_property_animation = property_animation_create_layer_frame(layer, &frame, &newFrame);
+
+  // Schedule to occur ASAP with default settings
+  animation_schedule((Animation*) s_property_animation);
+  //layer_set_frame(layer, newFrame);
 }
 
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) 
@@ -231,8 +241,6 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context)
   }
   
   layer_set_frame(layer, newFrame);
-  
-  trigger_alarm(-1);
 }
 
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) 

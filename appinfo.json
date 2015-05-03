@@ -20,7 +20,7 @@
     "shortName": "Watch Smart",
     "uuid": "0c0f8e32-f4eb-4efd-a556-3dcae796de42",
     "versionCode": 1,
-    "versionLabel": "1.6",
+    "versionLabel": "1.7",
     "watchapp": {
         "watchface": false
     }

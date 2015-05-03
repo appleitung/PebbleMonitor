@@ -165,11 +165,7 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
   int new_y = DISPLAY_HEIGHT - value;
   
   GRect newFrame = GRect(origin.x, new_y, size.w, new_h);
-  
-  // Create the animation
-  s_property_animation = property_animation_create_layer_frame(layer, &frame, &newFrame);
-  // Schedule to occur ASAP with default settings
-  animation_schedule((Animation*) s_property_animation);
+  layer_set_frame(layer, newFrame);
   
   trigger_alarm(value);
   
@@ -198,7 +194,6 @@ static void handle_window_unload(Window* window)
   destroy_ui();
 }
 
-static PropertyAnimation *sensitivity_animation;
 void move_sensitivity_layer(int steps)
 {
   Layer *layer = inverter_layer_get_layer(sensitivity_layer);
@@ -212,12 +207,7 @@ void move_sensitivity_layer(int steps)
   }
   
   GRect newFrame = GRect(origin.x, new_y, size.w, size.h);
-  
-  // Create the animation
-  sensitivity_animation = property_animation_create_layer_frame(layer, &frame, &newFrame);
-
-  // Schedule to occur ASAP with default settings
-  animation_schedule((Animation*) sensitivity_animation);
+  layer_set_frame(layer, newFrame);
 }
 
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) 
